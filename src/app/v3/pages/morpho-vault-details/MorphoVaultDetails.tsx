@@ -7,10 +7,15 @@ import { MorphoVaultStats } from "./components/MorphoVaultStats";
 import { TotalAssetsGraphComponent } from "./components/graph/TotalAssetsGraphComponent";
 import { Address } from "viem";
 import { NetApyGraphComponent } from "./components/net-apy-graph/NetApyGraphComponent";
+import { VaultDetails } from "./components/details-section/VaultDetails";
+import { VaultPickerButton } from "./components/vault-picker/VaultPickerButton";
 import { FormContainer } from "./components/FormContainer";
+import { useAccount } from "wagmi";
+import { CurrentHoldings } from "../../components/current-holdings/CurrentHoldings";
 
 export const MorphoVaultDetails = () => {
   const navigate = useNavigate();
+  const { isConnected } = useAccount();
   const { address } = useParams();
   const vault = address as Address | undefined;
 
@@ -21,7 +26,7 @@ export const MorphoVaultDetails = () => {
           <button onClick={() => navigate(`${RouterConfig.Routes.landingPage}/?tab=Vaults`)}>
             <ArrowLeftIcon width={24} height={24} />
           </button>
-          {/* <StrategyPickerButton strategy={address as Address} /> */}
+          <VaultPickerButton vault={address as Address} />
         </FlexRow>
 
         <div>
@@ -33,12 +38,11 @@ export const MorphoVaultDetails = () => {
             </div>
 
             <div className="flex flex-col gap-10 order-2 md:order-1">
-              {/* {isConnected && <CurrentHoldings />} */}
-              {/* todo add vault as param in TotalAssetsGraphComponent as wellw */}
+              {isConnected && <CurrentHoldings address={vault} />}
               <TotalAssetsGraphComponent />
               <NetApyGraphComponent vault={vault} />
               <MorphoVaultStats vault={vault} />
-              {/* <StrategyDetails /> */}
+              <VaultDetails />
             </div>
           </div>
         </div>

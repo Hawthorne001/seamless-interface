@@ -9,8 +9,8 @@ import { MappedVaultData } from "../../../../../statev3/morpho/types/MappedFullV
 import { useMutateDepositMorphoVault } from "../../../../../statev3/morpho/mutations/useMutateDepositMorphoVault";
 
 export const MorphoDepositForm = () => {
-  const { strategy } = useFormSettingsContext();
-  const { data: vaultData } = useFetchFormattedFullVaultInfo(strategy);
+  const { strategy: vault } = useFormSettingsContext();
+  const { data: vaultData } = useFetchFormattedFullVaultInfo(vault);
 
   if (!vaultData) {
     // eslint-disable-next-line no-console
@@ -42,9 +42,7 @@ const MoprhoDepositFormLocal: React.FC<{
 
   const { showNotification } = useNotificationContext();
 
-  const { depositAsync, isPending } = useMutateDepositMorphoVault(
-    vaultData.vaultAddress,
-  );
+  const { depositAsync, isPending } = useMutateDepositMorphoVault(vaultData.vaultAddress);
 
   const onSubmitAsync = async (data: FormData) => {
     await depositAsync(
@@ -80,10 +78,6 @@ const MoprhoDepositFormLocal: React.FC<{
           <FlexCol className="gap-3">
             <Typography type="medium3">Deposit</Typography>
             <RHFDepositAmountField name="amount" />
-          </FlexCol>
-
-          <FlexCol className="gap-3">
-            <Typography type="medium3">Receive</Typography>
           </FlexCol>
         </FlexCol>
 

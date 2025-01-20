@@ -3,7 +3,7 @@ import { Displayable, FlexCol, Image, Typography } from "@shared";
 import { Link } from "react-router-dom";
 import { RouterConfig } from "@router";
 
-export const NoStrategiesTableGuard: React.FC<{
+export const NoPositionsTableGuard: React.FC<{
   numberOfStrategiesDisplayable: Displayable<number>;
   children: React.ReactNode;
 }> = ({ numberOfStrategiesDisplayable, children }) => {
@@ -28,6 +28,10 @@ export const NoStrategiesTableGuard: React.FC<{
           Go back to{" "}
           <Link className="underline" to={RouterConfig.Routes.landingPage}>
             ILM tab
+          </Link>{" "}
+          or{" "}
+          <Link className="underline" to={RouterConfig.Routes.morphoVaultsTab}>
+            Vault tab
           </Link>{" "}
           to create a new position!
         </Typography>

@@ -1,8 +1,8 @@
 import { useParams } from "react-router-dom";
 import { DisplayText, FlexRow, Icon, ViewBigInt } from "@shared";
-import { useFetchFormattedUserStrategyProfit } from "../../../../../statev3/hooks/user-strategy-profit/UserStrategyProfit.hook";
-import { getColorBasedOnSign, getSvgBasedOnSign } from "../../../../utils/uiUtils";
 import { Address } from "viem";
+import { useFetchFormattedUserStrategyProfit } from "../../../statev3/hooks/user-strategy-profit/UserStrategyProfit.hook";
+import { getSvgBasedOnSign, getColorBasedOnSign } from "../../utils/uiUtils";
 
 function getProfitText(unrealizedGain: ViewBigInt, unrealizedGainPercentage: ViewBigInt): string | undefined {
   return `${unrealizedGain.symbol}${unrealizedGain.viewValue} (${unrealizedGainPercentage.viewValue}${unrealizedGainPercentage.symbol}) All time`;
@@ -16,7 +16,7 @@ export const UserProfit = () => {
     data: userProfit,
     isLoading,
     isFetched,
-  } = useFetchFormattedUserStrategyProfit({ strategy: strategy as Address | undefined });
+  } = useFetchFormattedUserStrategyProfit({ address: strategy as Address | undefined });
 
   if (isLoading || !isFetched) {
     return <span className="skeleton mt-[0.2px] flex w-20 h-6" />;

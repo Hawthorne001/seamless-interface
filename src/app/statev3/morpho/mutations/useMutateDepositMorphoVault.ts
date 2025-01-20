@@ -12,8 +12,16 @@ import { useFetchAssetBalance } from "../../common/queries/useFetchViewAssetBala
 import { setupBundle } from "../simulation/setupBundle";
 import { useFetchRawFullVaultInfo } from "../full-vault-info/FullVaultInfo.hook";
 import { fetchSimulationState } from "../simulation/fetchSimulationState";
+import { getFormattedAssetBalanceUsdValueQueryKey } from "../../queries/AssetBalanceWithUsdValue.hook";
+import { useFetchUserVaultPositions } from "../user-vault-positions/UserVaultPositions.hook";
+import { useState } from "react";
 
 export const useMutateDepositMorphoVault = (vaultAddress?: Address) => {
+  /* ------------- */
+  /*   Local state */
+  /* ------------- */
+  const [isSimulating, setIsSimulating] = useState(false);
+
   /* ------------- */
   /*   Meta data   */
   /* ------------- */
@@ -26,6 +34,7 @@ export const useMutateDepositMorphoVault = (vaultAddress?: Address) => {
   /*   Vault data  */
   /* ------------- */
   const { data: fullVaultData } = useFetchRawFullVaultInfo(vaultAddress);
+  const { data: userVaultPositions } = useFetchUserVaultPositions();
 
   /* -------------------- */
   /*   Query cache keys   */
@@ -44,8 +53,15 @@ export const useMutateDepositMorphoVault = (vaultAddress?: Address) => {
     queriesToInvalidate: [
       ...((accountAssetBalanceQK ?? []) as QueryKey[]),
       ...((assetAllowanceQK ?? []) as QueryKey[]),
+      getFormattedAssetBalanceUsdValueQueryKey(address, fullVaultData?.vaultByAddress.address),
     ],
     hideDefaultErrorOnNotification: true,
+    // TODO IMPORTANT: replace this with better fix
+    invalidateDelay: !userVaultPositions?.vaultPositions.find(
+      (pos) => pos.vaultPosition.baseData.vault.address === vaultAddress
+    )
+      ? 30000
+      : undefined,
   });
 
   /* -------------------- */
@@ -59,6 +75,8 @@ export const useMutateDepositMorphoVault = (vaultAddress?: Address) => {
     settings?: SeamlessWriteAsyncParams
   ) => {
     try {
+      setIsSimulating(true);
+
       if (!vaultAddress) throw new Error("Vault address is not found. Please try again later.");
       if (!args.amount) throw new Error("Amount is not defined. Please ensure the amount is greater than 0.");
       if (!address) throw new Error("Account address is not found. Please try again later.");
@@ -67,7 +85,7 @@ export const useMutateDepositMorphoVault = (vaultAddress?: Address) => {
         marketIds: fullVaultData?.vaultByAddress?.state?.allocation?.map((alloc) => alloc.market.uniqueKey) ?? [],
         users: [address, bundler, vaultAddress],
         tokens: [fullVaultData?.vaultByAddress.asset.address, vaultAddress],
-        vaults: [vaultAddress]
+        vaults: [vaultAddress],
       });
       if (!simulationState) throw new Error("Simulation failed. Please try again later.");
 
@@ -94,13 +112,15 @@ export const useMutateDepositMorphoVault = (vaultAddress?: Address) => {
         );
       }
     } catch (error) {
-      console.error("Failed to deposit to morpho vault", error);
+      console.error("Failed to deposit to a vault", error);
       showNotification({
         status: "error",
-        content: `Failed to deposit to morpho vault: ${getParsedError(error)}`,
+        content: `Failed to deposit to a vault: ${getParsedError(error)}`,
       });
+    } finally {
+      setIsSimulating(false);
     }
   };
 
-  return { ...rest, isDepositPending: rest.isPending, depositAsync };
+  return { ...rest, isDepositPending: rest.isPending || isSimulating, depositAsync };
 };

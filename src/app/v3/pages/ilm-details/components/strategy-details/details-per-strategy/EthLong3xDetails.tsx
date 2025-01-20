@@ -1,15 +1,15 @@
-import React from 'react'
-import { FlexCol, Typography } from '@shared'
-import { HowStrategyWorks } from '../HowStrategyWorks'
-import { LearnMore } from '../LearnMore'
-import { Address } from 'viem'
-import { LocalCollapseArrow } from '../common/LocalCollapseArrow'
-import { LocalCollapseTitle } from '../common/LocalCollapseTitle'
-import { FeesSharedAnswer } from '../common/FeesSharedAnswer'
-import { RiskSharedAnswer } from '../common/RiskSharedAnswer'
+import React from "react";
+import { FlexCol, Typography } from "@shared";
+import { HowStrategyWorks } from "../HowStrategyWorks";
+import { LearnMore } from "../LearnMore";
+import { Address } from "viem";
+import { FeesSharedAnswer } from "../common/FeesSharedAnswer";
+import { RiskSharedAnswer } from "../common/RiskSharedAnswer";
+import { LocalCollapseArrow } from "../../../../../components/details-section/DetailsCollapseArrow";
+import { LocalCollapseTitle } from "../../../../../components/details-section/DetailsCollapseTitle";
 
 export const EthLong3xDetails: React.FC<{
-  strategy: Address
+  strategy: Address;
 }> = ({ strategy }) => {
   return (
     <FlexCol className="w-full gap-8">
@@ -26,17 +26,22 @@ export const EthLong3xDetails: React.FC<{
           <LocalCollapseTitle>Do I have leverage exposure to ETH price with this ILM?</LocalCollapseTitle>
           <div className="collapse-content">
             <div>
-              <Typography type="regular3"> Yes. As ETH increases in price, returns are magnified in bullish market conditions. Conversely, losses are
-                magnified when ETH decreases.</Typography>
+              <Typography type="regular3">
+                {" "}
+                Yes. As ETH increases in price, returns are magnified in bullish market conditions. Conversely, losses
+                are magnified when ETH decreases.
+              </Typography>
             </div>
           </div>
         </LocalCollapseArrow>
 
         <LocalCollapseArrow>
-          <LocalCollapseTitle>What are main risks?</LocalCollapseTitle>
+          <LocalCollapseTitle>What are the main risks?</LocalCollapseTitle>
           <div className="collapse-content">
             <div>
-              <Typography type="regular3"><RiskSharedAnswer /></Typography>
+              <Typography type="regular3">
+                <RiskSharedAnswer />
+              </Typography>
             </div>
           </div>
         </LocalCollapseArrow>
@@ -59,5 +64,5 @@ export const EthLong3xDetails: React.FC<{
         </LocalCollapseArrow>
       </FlexCol>
     </FlexCol>
-  )
-}
+  );
+};
