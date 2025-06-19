@@ -49,7 +49,11 @@ export const Summary = () => {
         </DataRow>
 
         <DataRow label={<FlexRow className="md:gap-1 items-center">DEX cost</FlexRow>}>
-          <DisplayTokenAmount typography="bold2" {...previewRedeemData.data?.swapCost} symbolPosition="before" />
+          <DisplayTokenAmount
+            typography="bold2"
+            {...previewRedeemData.data?.swapCost?.dollarAmount}
+            symbolPosition="before"
+          />
         </DataRow>
       </FlexCol>
     </FlexCol>
