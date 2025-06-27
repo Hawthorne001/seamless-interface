@@ -1,12 +1,26 @@
+import { getConfig } from "@app/utils/queryContractUtils";
 import { leverageRouterAbi, leverageRouterAddress } from "@generated";
 import { getParsedError, SeamlessWriteAsyncParams, useNotificationContext, useSeamlessContractWrite } from "@shared";
-import { Address } from "viem";
-import { simulateContract } from "wagmi/actions";
+import { Address, parseEventLogs } from "viem";
 import { useAccount } from "wagmi";
+import { getPublicClient, simulateContract } from "wagmi/actions";
+import { LeverageManagerAbi } from "../../../../../abis/LeverageManager";
 import { LeverageRouterAbi } from "../../../../../abis/LeverageRouter";
-import { targetChain } from "../../../config/rainbow.config";
+import { config, targetChain } from "../../../config/rainbow.config";
 import { SwapContext } from "../hooks/useFetchAerodromeRoute";
-import { getConfig } from "@app/utils/queryContractUtils";
+
+export const getRedeemedShares = async (txHash: `0x${string}`) => {
+  const client = getPublicClient(config);
+  const { logs } = await client.getTransactionReceipt({ hash: txHash });
+
+  const parsedLogs = parseEventLogs({
+    abi: LeverageManagerAbi,
+    eventName: "Redeem",
+    logs,
+  });
+
+  return parsedLogs[0].args.actionData.shares;
+};
 
 export const useRedeemLeverageToken = (settings?: SeamlessWriteAsyncParams) => {
   /* ------------- */

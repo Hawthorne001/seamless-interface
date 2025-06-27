@@ -1,12 +1,11 @@
 import { createContext, useContext, useState, useCallback, ReactNode } from "react";
-import { parseUnits, type Address } from "viem";
+import { formatUnits, parseUnits, type Address } from "viem";
 import { useForm, UseFormReturn } from "react-hook-form";
 import {
   Displayable,
   FlexCol,
   getParsedError,
   SeamlessWriteAsyncParams,
-  Typography,
   useERC20Approve,
   useNotificationContext,
   useToken,
@@ -14,11 +13,6 @@ import {
 } from "@shared";
 import { LeverageToken } from "../../../../../data/leverage-tokens/queries/all-leverage-tokens/leverageTokens";
 import { useFetchLeverageTokenByAddress } from "../../../../../data/leverage-tokens/queries/leverage-token-by-address/FetchLeverageTokenByAddress";
-import { useWrappedDebounce } from "../../../../../data/common/hooks/useWrappedDebounce";
-import { useFetchViewAssetBalance } from "../../../../../data/common/queries/useFetchViewAssetBalance";
-import { useFetchCollateralAsset } from "../../../../../data/leverage-tokens/queries/CollateralAsset.all";
-import { useMintLeverageToken } from "../../../../../data/leverage-tokens/mutations/useMintLeverageToken";
-import { useRedeemLeverageToken } from "../../../../../data/leverage-tokens/mutations/useRedeemLeverageToken";
 import {
   PreviewRedeemWithSwap,
   useFetchPreviewRedeemWithSwap,
@@ -32,6 +26,17 @@ import {
   LimitStatus,
   useLeverageTokenLimitStatuses,
 } from "../../../../../data/leverage-tokens/hooks/useLeverageTokenFormStatuses";
+import { useFetchCollateralAsset } from "../../../../../data/leverage-tokens/queries/CollateralAsset.all";
+import { useFetchViewAssetBalance } from "../../../../../data/common/queries/useFetchViewAssetBalance";
+import { useWrappedDebounce } from "../../../../../data/common/hooks/useWrappedDebounce";
+import {
+  getMintedShares,
+  useMintLeverageToken,
+} from "../../../../../data/leverage-tokens/mutations/useMintLeverageToken";
+import {
+  getRedeemedShares,
+  useRedeemLeverageToken,
+} from "../../../../../data/leverage-tokens/mutations/useRedeemLeverageToken";
 
 /* -------------------- */
 /*   Types & Context    */
@@ -136,6 +141,8 @@ export function LeverageTokenFormProvider({
   const { data: collateralAsset } = useFetchCollateralAsset(selectedLeverageTokenAddress);
   const { data: collateralAssetData } = useToken(collateralAsset);
 
+  const { data: leverageTokenData } = useToken(selectedLeverageTokenAddress);
+
   /*   Query Hooks        */
   /* -------------------- */
   const selectedLeverageToken = useFetchLeverageTokenByAddress(selectedLeverageTokenAddress);
@@ -209,16 +216,33 @@ export function LeverageTokenFormProvider({
   );
 
   const { mintAsync, isMintPending } = useMintLeverageToken({
-    onSuccess: (txHash) => {
-      showNotification({
-        txHash,
-        content: (
-          <FlexCol className="w-full items-center text-center justify-center">
-            <Typography>You minted {debouncedDepositAmount}</Typography>
-          </FlexCol>
-        ),
-      });
+    onSuccessAsync: async (txHash) => {
+      try {
+        const shares = await getMintedShares(txHash);
+
+        let mintedShares;
+        if (leverageTokenData?.decimals) {
+          mintedShares = formatUnits(shares, leverageTokenData?.decimals);
+        }
+
+        showNotification({
+          txHash,
+          content: (
+            <FlexCol className="w-full items-center text-center justify-center">
+              You minted {mintedShares} {leverageTokenData?.symbol}
+            </FlexCol>
+          ),
+        });
+      } catch (error) {
+        console.error("Error fetching minted shares:", error);
+
+        showNotification({
+          txHash,
+          content: <FlexCol className="w-full items-center text-center justify-center">Mint was successful</FlexCol>,
+        });
+      }
     },
+
     onError: (error) => {
       showNotification({
         status: "error",
@@ -232,15 +256,31 @@ export function LeverageTokenFormProvider({
   });
 
   const { redeemAsync, isRedeemPending } = useRedeemLeverageToken({
-    onSuccess: (txHash) => {
-      showNotification({
-        txHash,
-        content: (
-          <FlexCol className="w-full items-center text-center justify-center">
-            You redeemed {debouncedWithdrawAmount}
-          </FlexCol>
-        ),
-      });
+    onSuccessAsync: async (txHash) => {
+      try {
+        const shares = await getRedeemedShares(txHash);
+
+        let redeemedShares;
+        if (leverageTokenData?.decimals) {
+          redeemedShares = formatUnits(shares, leverageTokenData?.decimals);
+        }
+
+        showNotification({
+          txHash,
+          content: (
+            <FlexCol className="w-full items-center text-center justify-center">
+              You redeemed {redeemedShares} {leverageTokenData?.symbol}
+            </FlexCol>
+          ),
+        });
+      } catch (error) {
+        console.error("Error fetching redeemed shares:", error);
+
+        showNotification({
+          txHash,
+          content: <FlexCol className="w-full items-center text-center justify-center">Redeem was successful</FlexCol>,
+        });
+      }
     },
     onError: (error) => {
       showNotification({

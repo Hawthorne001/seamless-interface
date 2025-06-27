@@ -118,7 +118,7 @@ export const fetchPreviewRedeemWithSwap = async ({
     swapCost = (swapCost * 10500n) / 10000n; // Add 5% slippage buffer to the swap cost
   }
 
-  const parsedAmount = parseUnits(amount, 18);
+  const parsedAmount = parseUnits(amount, collateralAssetData.decimals);
 
   const equityAfterSwapCost = swapCost ? parsedAmount - swapCost : undefined;
 
